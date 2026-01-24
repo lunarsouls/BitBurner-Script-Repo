@@ -1,2 +1,2 @@
 # BitBurner-Script-Repo
-Repo with various useful scripts the game BitBurner.
+Repo with various useful scripts for the game BitBurner.
