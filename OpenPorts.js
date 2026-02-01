@@ -1,71 +1,51 @@
-/** 
- * OpenPorts.js
- * This script recursively scans network starting from "home".
- * For every server found (except home), it attempts to open all available ports using your port-opening programs:
- *   - BruteSSH.exe
- *   - FTPCrack.exe
- *   - relaySMTP.exe
- *   - HTTPWorm.exe
- *   - SQLInject.exe
- */
+/** @param {NS} ns */
 export async function main(ns) {
-    ns.tprint("Starting OpenPorts scan...");
-    // Get all servers from home.
+    ns.tprint("Initializing port opening...");
+
+    // 1. CACHING: Check for programs ONCE at the start.
+    // We create a list of only the tools we actually own.
+    const myTools = [];
+    if (ns.fileExists("BruteSSH.exe", "home"))   myTools.push(ns.brutessh);
+    if (ns.fileExists("FTPCrack.exe", "home"))   myTools.push(ns.ftpcrack);
+    if (ns.fileExists("relaySMTP.exe", "home"))  myTools.push(ns.relaysmtp);
+    if (ns.fileExists("HTTPWorm.exe", "home"))   myTools.push(ns.httpworm);
+    if (ns.fileExists("SQLInject.exe", "home"))  myTools.push(ns.sqlinject);
+
+    // 2. GET SERVERS: (Same logic as before)
     const servers = getAllServers(ns);
     
+    let serversOpened = 0;
+
     for (const server of servers) {
-        if (server === "home") continue; // Skip home
-        ns.tprint(`Attempting to open ports on ${server}...`);
-        openPorts(ns, server);
+        if (server === "home") continue;
+
+        // 3. OPTIMIZATION: Only try to open ports if we haven't nuked it yet
+        // This prevents spamming scripts on servers you already fully control.
+        if (ns.hasRootAccess(server)) continue;
+
+        // 4. USE TOOLS: Loop through our "Toolbox"
+        for (const runTool of myTools) {
+            runTool(server); 
+        }
+        
+        serversOpened++;
     }
     
-    ns.tprint("OpenPorts scan complete.");
+    ns.tprint(`Scan complete. Attempted port opening on ${serversOpened} servers.`);
 }
 
-/**
- * Recursively scans the network starting from "home" and returns an array of all server hostnames.
- */
+// (getAllServers function remains the same as your original)
 function getAllServers(ns) {
     const visited = new Set();
     const queue = ["home"];
-    
     while (queue.length > 0) {
         const current = queue.pop();
         if (!visited.has(current)) {
             visited.add(current);
-            let neighbors = ns.scan(current);
-            for (const neighbor of neighbors) {
-                if (!visited.has(neighbor)) {
-                    queue.push(neighbor);
-                }
-            }
+            ns.scan(current).forEach(neighbor => {
+                if (!visited.has(neighbor)) queue.push(neighbor);
+            });
         }
     }
     return Array.from(visited);
-}
-
-/**
- * Attempts to open all available ports on the given server.
- */
-function openPorts(ns, server) {
-    if (ns.fileExists("BruteSSH.exe", "home")) {
-        ns.brutessh(server);
-        ns.tprint(`BruteSSH executed on ${server}`);
-    }
-    if (ns.fileExists("FTPCrack.exe", "home")) {
-        ns.ftpcrack(server);
-        ns.tprint(`FTPCrack executed on ${server}`);
-    }
-    if (ns.fileExists("relaySMTP.exe", "home")) {
-        ns.relaysmtp(server);
-        ns.tprint(`relaySMTP executed on ${server}`);
-    }
-    if (ns.fileExists("HTTPWorm.exe", "home")) {
-        ns.httpworm(server);
-        ns.tprint(`HTTPWorm executed on ${server}`);
-    }
-    if (ns.fileExists("SQLInject.exe", "home")) {
-        ns.sqlinject(server);
-        ns.tprint(`SQLInject executed on ${server}`);
-    }
 }
