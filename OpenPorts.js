@@ -1,18 +1,15 @@
 /** 
  * OpenPorts.js
  *
- * This script recursively scans your network starting from "home".
+ * This script recursively scans network starting from "home".
  * For every server found (except home), it attempts to open all available ports
- * using your port-opening programs:
+ * using port-opening programs:
  *   - BruteSSH.exe
  *   - FTPCrack.exe
  *   - relaySMTP.exe
  *   - HTTPWorm.exe
  *   - SQLInject.exe
- *
- * Usage:
- *   run OpenPorts.js
- */
+
 export async function main(ns) {
     ns.tprint("Starting OpenPorts scan...");
     // Get all servers from home.
@@ -28,8 +25,7 @@ export async function main(ns) {
 }
 
 /**
- * Recursively scans the network starting from "home" and returns an array of all server hostnames.
- */
+
 function getAllServers(ns) {
     const visited = new Set();
     const queue = ["home"];
