@@ -1,7 +1,7 @@
 /** @param {NS} ns */
 export async function main(ns) {
-	ns.disableLog("ALL");
-	ns.tprint("AUTO-BACKDOOR INITIATED...");
+	ns.enableLog("ALL");
+	ns.tprint("MASS-BACKDOOR INITIATED...");
 
 	// Get all servers
 	const servers = getAllServers(ns);
